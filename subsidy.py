@@ -1,4 +1,4 @@
-# 统计加班时间
+# 统计一个月的加班补助
 # Coded by Henry 6/12/2018
 
 import xlrd #可读写*.xls 2003格式表格数据
@@ -93,7 +93,7 @@ def parse_overtime(week, on_h, on_m, off_h, off_m):
         output_time_list.append(real_time)
     
     # 输出：上班时间（格式化）、下班时间（格式化）、加班时间（格式化）、加班时间（数值）、是否有餐补
-    return output_time_list[0], output_time_list[1], output_time_list[2], over_time, subsidy
+    return output_time_list[0], output_time_list[1], over_time, subsidy
 
     
 def stat_overtime(xls_path):
@@ -105,11 +105,11 @@ def stat_overtime(xls_path):
     for name in df['姓名']:
         if name not in name_dic:
             name_dic[name] = 1
-    total_overtime = 0  # 一个xls所有人的加班时间总和
+    # total_overtime = 0  # 一个xls所有人的加班时间总和
     # 遍历每个人的打卡时间
     for name in name_dic.keys():
         sr1 = df[df['姓名']==name]
-        print(name)
+        # print(name)
         #　打卡时间序列
         dwt_ser = sr1['日期时间']
         dwt_dict = {}
@@ -124,7 +124,7 @@ def stat_overtime(xls_path):
             else:
                 dwt_dict[date].append([week, hour, minute])
         # 遍历一天的
-        sum_over_time = 0   # 共计多少小时
+        this_name = list()
         for key in dwt_dict.keys():
             on_work_mark = dwt_dict[key][0]
             off_work_mark = dwt_dict[key][-1]
@@ -133,34 +133,28 @@ def stat_overtime(xls_path):
             on_work_min = on_work_mark[2]
             off_work_hour = off_work_mark[1]
             off_work_min = off_work_mark[2]
-            on_time, off_time, over_time, over_time_scalar, subsidy = parse_overtime(week, on_work_hour, on_work_min, off_work_hour, off_work_min)
-            if over_time_scalar >= 1:
-                sum_over_time += over_time_scalar
-                print('%s\t%s\t%s\t%s' % (key, on_time, off_time, over_time))
-            name_dic[name] = sum_over_time
-        total_overtime += sum_over_time
-        print('共计%.1f小时' % sum_over_time)
-    # 最终返回该文件中所有人加班时间总和 以及 每个人的加班时间统计字典
-    return total_overtime, name_dic
+            on_time, off_time, over_time, subsidy = parse_overtime(week, on_work_hour, on_work_min, off_work_hour, off_work_min)
+            # subsidy_mark = 0
+            if subsidy == True:
+                # subsidy_mark = 15
+            # print('%s\t%s-%s\t%.1f' % (key, on_time, off_time, over_time))
+                this_day = '%s\t%s-%s\t%.1f' % (key, on_time, off_time, over_time)
+                this_name.append(this_day)
+        name_dic[name] = this_name
+    return name_dic
 
 
 if __name__ == '__main__':
-    '''
-    sum_time = 0    # 所有文件所有人加班时间总和
-    stat_per_person = {}    #　部门人员加班统计
-    for xls in glob.glob('./*.xls*'):
-        overtime_per_xls, stat_per_xls = stat_overtime(xls)
-        sum_time += overtime_per_xls
-        for person in stat_per_xls.keys():
-            if person in stat_per_person:
-                stat_per_person[person] += stat_per_xls[person]
-            else:
-                stat_per_person[person] = 0
-    print(sum_time, stat_per_person)
-    
-    for xls in glob.glob('./*-07*.xls*'):
-        stat_overtime(xls)
-    '''
-    # xls = r'./1210-1216.xls'
-    xls = r'D:\公司材料\加班明细\overwork_xls\1224-1225.xls'
-    stat_overtime(xls)
+    subsidy_month = dict()
+    for xls in glob.glob(r'D:\公司材料\加班明细\overwork_xls\*-12*.xls*'):  # 修改后面一位的数字即可
+        this_xls = stat_overtime(xls)
+        if not subsidy_month:
+            subsidy_month = this_xls
+        else:
+            for name in this_xls:
+                for record in this_xls[name]:
+                    subsidy_month[name].append(record)
+    for key in subsidy_month:
+        print(key)
+        for record in subsidy_month[key]:
+            print(record)
