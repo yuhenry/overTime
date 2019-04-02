@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import os
 import glob
+from collections import defaultdict
 
 
 def parse_overtime(week, on_h, on_m, off_h, off_m):
@@ -145,15 +146,12 @@ def stat_overtime(xls_path):
 
 
 if __name__ == '__main__':
-    subsidy_month = dict()
-    for xls in glob.glob(r'D:\公司材料\加班明细\overwork_xls\*-12*.xls*'):  # 修改后面一位的数字即可
+    subsidy_month = defaultdict(list)
+    for xls in glob.glob(r'D:\公司材料\加班明细\overwork_xls\*-02*.xls*'):  # 修改后面一位的数字即可
         this_xls = stat_overtime(xls)
-        if not subsidy_month:
-            subsidy_month = this_xls
-        else:
-            for name in this_xls:
-                for record in this_xls[name]:
-                    subsidy_month[name].append(record)
+        for name in this_xls:
+            for record in this_xls[name]:
+                subsidy_month[name].append(record)
     for key in subsidy_month:
         print(key)
         for record in subsidy_month[key]:

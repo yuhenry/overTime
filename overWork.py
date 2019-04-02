@@ -34,17 +34,21 @@ def parse_overtime(week, on_h, on_m, off_h, off_m):
     on_work_time = on_h + on_m
     off_work_time = off_h + off_m
     
-    # 上班时间
+    # 当天工作总时间
     if on_work_time >= 13:
         # 13点后上班 不计算中午1小时休息时间
         over_time = off_work_time - on_work_time
     elif 13 > on_work_time > 12:
         # 12点~13点上班 按13点算
         over_time = off_work_time - 13
+    elif on_work_time < 8.5:
+        # 8点半前来单位不能计入上班时长
+        over_time = off_work_time - 8.5 - 1
     else:
         # 12点前上班 算入中午1小时休息时间
         over_time = off_work_time - on_work_time - 1
 
+    #　当天加班时长
     # 周六周日
     if week == std_week[5] or week == std_week[6]:
         # 周末超8小时才有餐补
@@ -70,7 +74,7 @@ def parse_overtime(week, on_h, on_m, off_h, off_m):
         else:
             subsidy = False
         
-        # 工作日加班起算时间
+        # 工作日加班起算时间（打印用）
         if on_work_time <= 8.5:
             on_work_time = 17.5
         else:
@@ -162,5 +166,5 @@ if __name__ == '__main__':
         stat_overtime(xls)
     '''
     # xls = r'./1210-1216.xls'
-    xls = r'D:\公司材料\加班明细\overwork_xls\1224-1225.xls'
+    xls = r'D:\公司材料\加班明细\overwork_xls\0326-0331.xls'
     stat_overtime(xls)
